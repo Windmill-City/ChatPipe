@@ -2,7 +2,7 @@
 {
   "modid": "chatpipe",
   "name": "ChatPipe",
-  "description": "Chat between minecraft and other programs",
+  "description": "Chat between minecraft and external programs",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",

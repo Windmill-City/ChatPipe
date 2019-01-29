@@ -1,0 +1,16 @@
+[
+{
+  "modid": "chatpipe",
+  "name": "ChatPipe",
+  "description": "Chat between minecraft and external programs",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["e? what's this?"],
+  "credits": "Thanks all capp members",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

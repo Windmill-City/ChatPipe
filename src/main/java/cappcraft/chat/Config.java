@@ -32,12 +32,8 @@ public class Config {
         config.save();
     }
 
-    public static boolean reload(){
+    public static void reload(){
         load();
-        if(config.hasChanged()){
-            proxy.startWebsocketServer();
-            return true;
-        }
-        return false;
+        proxy.startWebsocketServer();
     }
 }

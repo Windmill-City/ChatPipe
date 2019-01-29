@@ -26,11 +26,7 @@ public class ChatCommand extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if(args.length == 1 && args[0].equals("reload")) {
-            if(Config.reload()) {
-                sender.sendMessage(new TextComponentString("Reloaded Config"));
-                return;
-            }
-            sender.sendMessage(new TextComponentString("Config hasn't changed"));
+            sender.sendMessage(new TextComponentString("Reloaded Config"));
         }else {
             sender.sendMessage(new TextComponentString("/chatpipe reload"));
         }

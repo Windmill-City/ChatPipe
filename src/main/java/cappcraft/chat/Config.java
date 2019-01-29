@@ -10,6 +10,7 @@ public class Config {
     private static Configuration config;
 
     //WebSocketServer
+    public static int timeout;
     public static boolean useWebsocketServer = true;
     public static boolean checkPath = false;
     public static String websocketPath = "/";
@@ -29,6 +30,9 @@ public class Config {
                 ,"Block connections of which request url doesn't start with the path following(eg: Url = 127.0.0.1/ws Path = /ws)");
         websocketPath = config.getString("websocketPath",WebsocketServer,websocketPath
                 ,"(eg: Url = 127.0.0.1/ws Path = /ws)");
+        timeout = config.getInt("timeout",WebsocketServer,300,-1,Integer.MAX_VALUE,
+                "Set connection timeout time here set to -1 to disable" +
+                "/n(you can send PingWebSocketFrame to keep connection and check if server is still alive)");
         config.save();
     }
 

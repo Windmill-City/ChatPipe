@@ -9,6 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.SocketAddress;
 
 public class WebsocketServer {
+    public ChannelFuture WebsocketServerChannelFuture;
     private final SocketAddress address;
     private final EventLoopGroup group = new NioEventLoopGroup();
     public WebsocketServer(SocketAddress address){
@@ -17,7 +18,7 @@ public class WebsocketServer {
     public void run() throws Exception {
         ServerBootstrap b = new ServerBootstrap();
         b.group(group).channel(NioServerSocketChannel.class).childHandler(new ChatChannelInitializer());
-        ChannelFuture f = b.bind(address).sync();
-        f.channel().closeFuture().sync();
+        WebsocketServerChannelFuture = b.bind(address).sync();
+        WebsocketServerChannelFuture.channel().closeFuture().sync();
     }
 }

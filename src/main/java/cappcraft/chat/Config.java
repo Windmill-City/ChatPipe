@@ -4,6 +4,8 @@ import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
 
+import static cappcraft.chat.ChatPipe.proxy;
+
 public class Config {
     private static Configuration config;
 
@@ -15,6 +17,9 @@ public class Config {
 
     public static void initConfig(File file){
         config = new Configuration(file);
+        load();
+    }
+    private static void load(){
         config.load();
         String WebsocketServer = "WebsocketServer";
         useWebsocketServer = config.getBoolean("enable",WebsocketServer, useWebsocketServer,"WebsocketServer");
@@ -25,5 +30,14 @@ public class Config {
         websocketPath = config.getString("websocketPath",WebsocketServer,websocketPath
                 ,"(eg: Url = 127.0.0.1/ws Path = /ws)");
         config.save();
+    }
+
+    public static boolean reload(){
+        load();
+        if(config.hasChanged()){
+            proxy.startWebsocketServer();
+            return true;
+        }
+        return false;
     }
 }

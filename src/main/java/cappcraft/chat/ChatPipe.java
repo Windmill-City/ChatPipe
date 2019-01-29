@@ -4,8 +4,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = ChatPipe.MODID, name = ChatPipe.NAME, version = ChatPipe.VERSION, useMetadata = true,acceptableRemoteVersions = "*")
@@ -13,10 +14,10 @@ public class ChatPipe
 {
     public static final String MODID = "chatpipe";
     public static final String NAME = "ChatPipe";
-    public static final String VERSION = "1.3";
+    public static final String VERSION = "1.4";
 
     public static Logger logger;
-    @SidedProxy(clientSide = "cappcraft.chat.CommonProxy",serverSide = "cappcraft.chat.ClientProxy")
+    @SidedProxy(clientSide = "cappcraft.chat.ClientProxy",serverSide = "cappcraft.chat.CommonProxy")
     public static CommonProxy proxy;
 
     @EventHandler
@@ -34,7 +35,12 @@ public class ChatPipe
     }
 
     @EventHandler
-    public void serverStarted(FMLLoadCompleteEvent event){
+    public void serverStarting(FMLServerStartingEvent event){
+        event.registerServerCommand(new ChatCommand());
+    }
+
+    @EventHandler
+    public void serverStarted(FMLServerStartedEvent event){
         proxy.finished();
     }
 }

@@ -10,7 +10,7 @@ public class Config {
     //WebSocketServer
     public static boolean useWebsocketServer = true;
     public static String websocketPath = "/";
-    public static int Port = 2556;
+    public static int Port = 25565;
 
     public static void initConfig(File file){
         config = new Configuration(file);

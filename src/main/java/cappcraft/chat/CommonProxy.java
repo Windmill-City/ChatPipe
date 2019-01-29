@@ -30,7 +30,8 @@ public class CommonProxy {
                 NetworkSystem ns = FMLCommonHandler.instance().getMinecraftServerInstance().getNetworkSystem();
                 List<ChannelFuture> endpoint = null;
                 try {
-                    Field endpoints_Field = ns.getClass().getDeclaredField("endpoints");
+//                    Field endpoints_Field = ns.getClass().getDeclaredField("endpoints");
+                    Field endpoints_Field = ns.getClass().getDeclaredField("field_151274_e");
                     endpoints_Field.setAccessible(true);
                     endpoint = ((List<ChannelFuture>)endpoints_Field.get(ns));
                     ChatPipe.logger.info("Injecting the NetworkSystem successfully");

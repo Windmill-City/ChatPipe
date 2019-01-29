@@ -22,12 +22,6 @@ public class ExternelChatHandler extends SimpleChannelInboundHandler<WebSocketFr
         handlerWebSocketFrame(ctx,msg);
     }
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        contexts.add(ctx);
-        ChatPipe.logger.info("[Connected] Address: " + ctx.channel().remoteAddress().toString());
-    }
-
     private void handlerWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame msg){
         if(msg instanceof TextWebSocketFrame){
             FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager()
@@ -36,13 +30,20 @@ public class ExternelChatHandler extends SimpleChannelInboundHandler<WebSocketFr
     }
 
     @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        contexts.add(ctx);
+        ChatPipe.logger.info("[Connected] Address: " + ctx.channel().remoteAddress().toString());
+    }
+
+    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception{
+        contexts.remove(ctx);
         ChatPipe.logger.info("[DisConnected] Address: " + ctx.channel().remoteAddress().toString());
     }
 
-    public void sendChatOutbound(TextWebSocketFrame msg){
+    public void sendChatOutbound(String msg){
         for (ChannelHandlerContext ctx : contexts) {
-            ctx.writeAndFlush(msg);
+            ctx.writeAndFlush(new TextWebSocketFrame(msg));
         }
     }
 }

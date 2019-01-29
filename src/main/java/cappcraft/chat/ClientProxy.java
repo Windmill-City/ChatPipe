@@ -1,8 +1,7 @@
 package cappcraft.chat;
 
-
 public class ClientProxy extends CommonProxy{
-    public static void  preinit(){}
-    public static void  init(){}
-    public static void  finished(){}
+    public void  preinit(){}
+    public void  init(){}
+    public void  finished(){}
 }

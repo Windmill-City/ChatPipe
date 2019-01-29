@@ -9,6 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
 @ChannelHandler.Sharable
 public class HeaderChecker extends ChannelInboundHandlerAdapter {
@@ -27,6 +28,9 @@ public class HeaderChecker extends ChannelInboundHandlerAdapter {
                 ctx.channel().pipeline().remove("prepender");
                 ctx.channel().pipeline().remove("encoder");
                 ctx.channel().pipeline().remove("packet_handler");
+                if(Config.timeout >= 0){
+                    ctx.channel().pipeline().addLast(new ReadTimeoutHandler(Config.timeout));
+                }
                 ctx.channel().pipeline().addLast(new HttpServerCodec()).addLast(new HttpObjectAggregator(128)).addLast(new WebSocketServerProtocolHandler(Config.websocketPath)).addLast(ExternelChatHandler.INSTANCE);
             }
             parser.reset();

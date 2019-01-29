@@ -2,9 +2,7 @@ package cappcraft.chat;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.*;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = ChatPipe.MODID, name = ChatPipe.NAME, version = ChatPipe.VERSION, useMetadata = true,acceptableRemoteVersions = "*")
@@ -12,16 +10,16 @@ public class ChatPipe
 {
     public static final String MODID = "chatpipe";
     public static final String NAME = "ChatPipe";
-    public static final String VERSION = "1.3";
+    public static final String VERSION = "1.4";
 
     public static Logger logger;
-    @SidedProxy(clientSide = "cappcraft.chat.CommonProxy",serverSide = "cappcraft.chat.ClientProxy")
+    @SidedProxy(clientSide = "cappcraft.chat.ClientProxy",serverSide = "cappcraft.chat.CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        CommonProxy.preinit();
+        proxy.preinit();
         Config.initConfig(event.getSuggestedConfigurationFile());
         logger = event.getModLog();
     }
@@ -29,11 +27,16 @@ public class ChatPipe
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
-        CommonProxy.init();
+        proxy.init();
     }
 
     @Mod.EventHandler
-    public void serverStarted(FMLLoadCompleteEvent event){
-        CommonProxy.finished();
+    public void serverStarting(FMLServerStartingEvent event){
+        event.registerServerCommand(new ChatCommand());
+    }
+
+    @Mod.EventHandler
+    public void serverStarted(FMLServerStartedEvent event){
+        proxy.finished();
     }
 }

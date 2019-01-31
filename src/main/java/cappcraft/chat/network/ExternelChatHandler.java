@@ -45,7 +45,6 @@ public class ExternelChatHandler extends SimpleChannelInboundHandler<WebSocketFr
     }
 
     public void sendOutbound(ChatMessage msg){
-        ChatPipe.logger.info(gson.toJson(msg));
         ChatPipe.proxy.channels.writeAndFlush(new TextWebSocketFrame(gson.toJson(msg)));
     }
 }

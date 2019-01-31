@@ -38,6 +38,6 @@ public class Config {
 
     public static void reload(){
         load();
-        proxy.startWebsocketServer();
+        proxy.restart();
     }
 }

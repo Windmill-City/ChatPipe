@@ -1,9 +1,17 @@
 package cappcraft.chat;
 
-import cappcraft.chat.network.ChatChannelAccepter;
+import cappcraft.chat.network.ChannelAccepter;
 import cappcraft.chat.network.WebsocketServer;
+import cappcraft.chat.network.message.MessageType;
+import cappcraft.chat.network.message.MessageTypeAdaptor;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import cpw.mods.fml.common.FMLCommonHandler;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import net.minecraft.network.NetworkSystem;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -13,21 +21,23 @@ import java.net.SocketAddress;
 import java.util.List;
 
 public class CommonProxy {
-    WebsocketServer websocketServer;
+    ChannelFuture wsfuture;
+    ChannelPipeline mcpipeline;
+    public ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    public ChatHandler chatHandler = new ChatHandler();
+    private NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("WebSocket IO #%d").setDaemon(true).build());;
     public void  preinit(){}
 
     public void init(){
-        MinecraftForge.EVENT_BUS.register(new  ChatHandler());
+        MinecraftForge.EVENT_BUS.register(chatHandler);
     }
 
     public void finished(){
         startWebsocketServer();
+        MessageTypeAdaptor.INSTANCE.registerMessage(MessageType.COMMAND);
     }
 
     public void startWebsocketServer(){
-        if(websocketServer != null) {
-            websocketServer.WebsocketServerChannelFuture.channel().close();
-        }
         if(Config.useWebsocketServer){
             SocketAddress address = new InetSocketAddress(Config.Port);
             if(FMLCommonHandler.instance().getMinecraftServerInstance().getServerPort() == Config.Port)
@@ -41,32 +51,37 @@ public class CommonProxy {
                     Field endpoints_Field = ns.getClass().getDeclaredField("field_151274_e");
                     endpoints_Field.setAccessible(true);
                     endpoint = ((List<ChannelFuture>)endpoints_Field.get(ns));
-                    ChatPipe.logger.info("Injecting the NetworkSystem successfully");
+                    mcpipeline = endpoint.get(0).channel().pipeline();
+                    ChatPipe.logger.info("Injected the NetworkSystem successfully");
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     ChatPipe.logger.error("Failed to inject NetworkSystem",e);
                 }
-                //prevent added multiply accepter when restart websocketserver
-                try{
-                    endpoint.get(0).channel().pipeline().remove(ChatChannelAccepter.class);
-                }catch (Throwable t){}
                 //Add accepter to handle websocket connections
-                endpoint.get(0).channel().pipeline().addFirst(new ChatChannelAccepter());
+                endpoint.get(0).channel().pipeline().addFirst(new ChannelAccepter());
             } else {
                 //use different port start an server to handler websocket connections
-                websocketServer = new WebsocketServer(address);
-                ChatPipe.logger.info("Starting internal WebsocketServer on:*:" + Config.Port);
-                Thread server = new Thread(() -> {
-                    try {
-                        websocketServer.run();
-                    } catch (Exception e) {
-                        ChatPipe.logger.error("Failed to run internal WebsocketServer", e);
-                    }
-                });
-                server.setDaemon(true);
-                server.setPriority(Thread.MIN_PRIORITY);
-                server.setName("ChatPipe:internal WebsocketServer");
-                server.start();
+                WebsocketServer server = new WebsocketServer(address,eventLoopGroup);
+                ChatPipe.logger.info("Starting internal WebsocketServer on:" + address.toString());
+                try {
+                    wsfuture = server.start();
+                } catch (Exception e) {
+                    ChatPipe.logger.error("Failed to start internal WebsocketServer",e);
+                }
             }
         }
+    }
+
+    public void restart(){
+        if(wsfuture != null) {
+            wsfuture.channel().close().syncUninterruptibly();
+        }
+        //prevent adding multiply accepter when restarting
+        if(mcpipeline != null) {
+            try {
+                mcpipeline.remove(ChannelAccepter.class);
+            } catch (Throwable t) {}
+        }
+        channels.close().syncUninterruptibly();
+        startWebsocketServer();
     }
 }

@@ -16,6 +16,7 @@ Set server port in chatpipe.cfg
 
 use `/chatpipe reload` to reload the config
 then you can use your websocketClient to connect to the server
+
 **This mod use json to handle messages and commands**
 
 

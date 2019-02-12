@@ -3,7 +3,6 @@ package cappcraft.chat;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -14,7 +13,7 @@ public class ChatPipe
 {
     public static final String MODID = "chatpipe";
     public static final String NAME = "ChatPipe";
-    public static final String VERSION = "1.4";
+    public static final String VERSION = "1.5";
 
     public static Logger logger;
     @SidedProxy(clientSide = "cappcraft.chat.ClientProxy",serverSide = "cappcraft.chat.CommonProxy")
@@ -23,15 +22,8 @@ public class ChatPipe
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        proxy.preinit();
-        Config.initConfig(event.getSuggestedConfigurationFile());
+        proxy.preinit(event);
         logger = event.getModLog();
-    }
-
-    @EventHandler
-    public void init(FMLInitializationEvent event)
-    {
-        proxy.init();
     }
 
     @EventHandler
@@ -41,6 +33,6 @@ public class ChatPipe
 
     @EventHandler
     public void serverStarted(FMLServerStartedEvent event){
-        proxy.finished();
+        proxy.initCoolQ();
     }
 }

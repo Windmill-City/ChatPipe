@@ -29,7 +29,7 @@ public class GroupMessage {
     //            , -> &#94;
     static Pattern Escape_44 = Pattern.compile("(?:&#94;)+?");
     //remove \r
-    static Pattern Escape_r = Pattern.compile("(?:(?:\n)?\r)+?");
+    static Pattern Escape_r = Pattern.compile("(?:\r(\n)?)+?");
 
     public static String getWithNoCQCode(String s, boolean escape){
         String noCQCodeString = getCQCodes(s).replaceAll("");

@@ -24,7 +24,8 @@ public class ChatCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if(args.length == 1 && args[0].equals("reload")) {
-            Config.reload();
+            ChatpipeConfig.load();
+            ChatPipe.proxy.reinitCoolQ();
             sender.addChatMessage(new ChatComponentText("Reloaded Config"));
         }else {
             sender.addChatMessage(new ChatComponentText("/chatpipe reload"));

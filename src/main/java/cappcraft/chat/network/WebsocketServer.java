@@ -1,7 +1,7 @@
 package cappcraft.chat.network;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
@@ -14,9 +14,9 @@ public class WebsocketServer {
         this.address = address;
         this.group = group;
     }
-    public ChannelFuture start() throws Exception {
+    public Channel start() throws Exception {
         ServerBootstrap b = new ServerBootstrap();
-        b.group(group).channel(NioServerSocketChannel.class).childHandler(new ChatChannelInitializer());
-        return b.bind(address).sync();
+        b.group(group).channel(NioServerSocketChannel.class).childHandler(CustomInitializer.INSTANCE);
+        return b.bind(address).sync().channel();
     }
 }

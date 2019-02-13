@@ -13,8 +13,6 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
@@ -24,7 +22,6 @@ import static cappcraft.chat.ChatPipe.proxy;
 import static cappcraft.chat.coolq.GroupMessage.getWithNoCQCode;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE;
 
 @ChannelHandler.Sharable
 public class CoolQServerHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
@@ -37,7 +34,7 @@ public class CoolQServerHandler extends SimpleChannelInboundHandler<WebSocketFra
     public void onChatEvent(ServerChatEvent chat){
         for (Channel ch :
                 proxy.channels) {
-            if(ch.attr(Client_Role) != null && ch.attr(Client_Role).get().equals("API")){
+            if(ch.attr(Client_Role) != null && ch.attr(Client_Role).get().matches("API|Universal")){
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("action", "send_group_msg");
                 JsonObject params = new JsonObject();
@@ -82,7 +79,22 @@ public class CoolQServerHandler extends SimpleChannelInboundHandler<WebSocketFra
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if(evt == HANDSHAKE_COMPLETE){
+        if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
+            HttpHeaders headers = ((WebSocketServerProtocolHandler.HandshakeComplete) evt).requestHeaders();
+            if(headers.get("X-Self-ID") != null && headers.get("X-Client-Role") != null) {
+                ctx.channel().attr(SelfID).set(headers.get("X-Self-ID"));
+                ctx.channel().attr(Client_Role).set(headers.get("X-Client-Role"));
+                if (!ChatpipeConfig.connect_access_token.isEmpty()) {
+                    if (headers.get("Authorization") == null || !headers.get("Authorization").regionMatches(6, ChatpipeConfig.connect_access_token, 0, ChatpipeConfig.connect_access_token.length())) {
+                        ctx.writeAndFlush(new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)).addListener((ChannelFutureListener) future -> future.channel().close());
+                        return;
+                    }
+                }
+                proxy.channels.add(ctx.channel());
+                ChatPipe.logger.info("[CoolQ -> Server] [Connected] Address:" + ctx.channel().remoteAddress().toString() +
+                        " X-Self-ID:" + ctx.channel().attr(SelfID).get() +
+                        " X-Client-Role:" + ctx.channel().attr(Client_Role).get());
+            }
         }
         super.userEventTriggered(ctx, evt);
     }

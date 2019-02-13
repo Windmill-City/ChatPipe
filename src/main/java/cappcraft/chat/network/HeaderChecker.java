@@ -17,14 +17,14 @@ public class HeaderChecker extends ChannelInboundHandlerAdapter {
             if(readVarInt(byteBuf) == -1 || readVarInt(byteBuf) != 0x00) {
                 //Removes MC's handlers
                 ctx.channel().pipeline().remove("timeout");
-                ctx.channel().pipeline().remove("legacy_query");
                 ctx.channel().pipeline().remove("splitter");
                 ctx.channel().pipeline().remove("decoder");
                 ctx.channel().pipeline().remove("prepender");
+                ctx.channel().pipeline().remove("encoder");
                 ctx.channel().pipeline().remove("packet_handler");
                 //Add custom messagehandler
-                ctx.channel().pipeline().addLast(CustomInitializer.INSTANCE);
-                ctx.channel().pipeline().fireChannelActive();
+                ctx.channel().pipeline().addFirst(CustomInitializer.INSTANCE);
+                ctx.channel().pipeline().fireChannelRegistered().fireChannelActive();
             }
             byteBuf.resetReaderIndex();
         }

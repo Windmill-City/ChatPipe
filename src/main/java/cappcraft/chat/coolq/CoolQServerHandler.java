@@ -35,7 +35,7 @@ public class CoolQServerHandler extends SimpleChannelInboundHandler<WebSocketFra
     public void onChatEvent(ServerChatEvent chat){
         for (Channel ch :
                 proxy.channels) {
-            if(ch.hasAttr(Client_Role) && ch.attr(Client_Role).get().equals("API")){
+            if(ch.hasAttr(Client_Role) && ch.attr(Client_Role).get().matches("API|Universal")){
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("action", "send_group_msg");
                 JsonObject params = new JsonObject();
